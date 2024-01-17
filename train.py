@@ -27,12 +27,6 @@ from reshape import reshape_model
 
 from defaultargs import defaultargs
 
-# get the available network architectures
-model_names = sorted(name for name in models.__dict__
-    if name.islower() and not name.startswith("__")
-    and callable(models.__dict__[name]))
-
-
 # parse command-line arguments
 parser = argparse.ArgumentParser(description='PyTorch Image Classifier Training')
 
@@ -45,12 +39,6 @@ parser.add_argument('--multi-label-threshold', type=float, default=0.5,
 parser.add_argument('--model-dir', type=str, default='models', 
                     help='path to desired output directory for saving model '
 					'checkpoints (default: models/)')
-parser.add_argument('-a', '--arch', metavar='ARCH', default='resnet34', #    MAKE 34
-                    choices=model_names,
-                    help='model architecture: ' + ' | '.join(model_names) + ' (default: resnet18)')
-#parser.add_argument('--resolution', default=400, type=int, metavar='N',
-#                    help='input NxN image resolution of model (default: 224x224) '
-#                         'note than Inception models should use 299x299')
 parser.add_argument('-j', '--workers', default=2, type=int, metavar='N',
                     help='number of data loading workers (default: 2)')
 parser.add_argument('--epochs', default=35, type=int, metavar='N',

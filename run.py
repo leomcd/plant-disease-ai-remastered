@@ -17,6 +17,9 @@ parser.add_argument('--img', type=str, default='data/test/AppleScab1.JPG',
 
 args = parser.parse_args()
 
+for key in defaultargs.keys():
+    args.__dict__[key] = defaultargs[key]
+
 def create_image_tensor(img_path):
     img = Image.open(img_path)
 
@@ -36,21 +39,24 @@ def create_image_tensor(img_path):
 
     return t
 
-def main(args):
-    img_tensor = create_image_tensor(args.img)
+def inference_image(img):
+    img_tensor = create_image_tensor(img)
 
-    model = torchvision.models.resnet18()
-    model = reshape_model(model, 33)
-    model.load_state_dict(torch.load("models/model_best.pth.tar")['state_dict'])
+    model = torchvision.models.__dict__[args.arch]()
+
+    saved_pth = torch.load("models/model_best.pth.tar")
+
+    model = reshape_model(model, saved_pth['num_classes'])
+    model.load_state_dict(saved_pth['state_dict'])
     model.eval()
 
     output = model(img_tensor)
-    prediction = torch.argmax(output)
-    confidence = torch.max(torch.nn.Softmax(dim=1)(output)) * 100
-    print(prediction.numpy(), confidence.detach().numpy())
+    prediction_idx = torch.argmax(output).numpy()
+    confidence = torch.max(torch.nn.Softmax(dim=1)(output)).detach().numpy() * 100
+
+    prediction = saved_pth['classes'][prediction_idx]
+
+    return (prediction, confidence)
 
 if __name__ == "__main__":
-    for key in defaultargs.keys():
-        args.__dict__[key] = defaultargs[key]
-
-    main(args)
+    print(inference_image(args.img))
