@@ -25,13 +25,19 @@ from torch.utils.tensorboard import SummaryWriter
 
 from reshape import reshape_model
 
-from defaultargs import defaultargs
+# get the available network architectures
+model_names = sorted(name for name in models.__dict__
+    if name.islower() and not name.startswith("__")
+    and callable(models.__dict__[name]))
 
 # parse command-line arguments
 parser = argparse.ArgumentParser(description='PyTorch Image Classifier Training')
 
 parser.add_argument('data', metavar='DIR',
                     help='path to dataset')
+parser.add_argument('--dataset-type', type=str, default='folder',
+                    choices=['folder', 'nuswide', 'voc'],
+                    help='specify the dataset type (default: folder)')
 parser.add_argument('--multi-label', action='store_true',
                     help='multi-label model (aka image tagging)')
 parser.add_argument('--multi-label-threshold', type=float, default=0.5,
@@ -39,6 +45,12 @@ parser.add_argument('--multi-label-threshold', type=float, default=0.5,
 parser.add_argument('--model-dir', type=str, default='models', 
                     help='path to desired output directory for saving model '
 					'checkpoints (default: models/)')
+parser.add_argument('-a', '--arch', metavar='ARCH', default='resnet18',
+                    choices=["resnet18","resnet34"],
+                    help='model architecture: ' + ' | '.join(model_names) + ' (default: resnet18)')
+parser.add_argument('--resolution', default=400, type=int, metavar='N',
+                    help='input NxN image resolution of model (default: 224x224) '
+                         'note than Inception models should use 299x299')
 parser.add_argument('-j', '--workers', default=2, type=int, metavar='N',
                     help='number of data loading workers (default: 2)')
 parser.add_argument('--epochs', default=35, type=int, metavar='N',
@@ -60,10 +72,8 @@ parser.add_argument('--resume', default='', type=str, metavar='PATH',
                     help='path to latest checkpoint (default: none)')
 parser.add_argument('-e', '--evaluate', dest='evaluate', action='store_true',
                     help='evaluate model on validation set')
-parser.add_argument('--pretrained', dest='pretrained', action='store_true', default=True,
+parser.add_argument('--pretrained', dest='pretrained', action='store_true', default=False, #SET CHANGEABLE
                     help='use pre-trained model')
-parser.add_argument('--seed', default=None, type=int,
-                    help='seed for initializing training')
 parser.add_argument('--gpu', default=0, type=int,
                     help='GPU ID to use (default: 0)')
 
@@ -84,16 +94,6 @@ def main(args):
     """
     global best_accuracy
     
-    if args.seed is not None:
-        random.seed(args.seed)
-        torch.manual_seed(args.seed)
-        cudnn.deterministic = True
-        warnings.warn('You have chosen to seed training. '
-                      'This will turn on the CUDNN deterministic setting, '
-                      'which can slow down your training considerably! '
-                      'You may see unexpected behavior when restarting '
-                      'from checkpoints.')
-
     if args.gpu is not None:
         print(f"=> using GPU {args.gpu} ({torch.cuda.get_device_name(args.gpu)})")
 
@@ -424,7 +424,4 @@ class ProgressMeter(object):
 
 
 if __name__ == '__main__':
-    for key in defaultargs.keys():
-        args.__dict__[key] = defaultargs[key]
-
     main(args)

@@ -1,5 +1,6 @@
-models34/tensorboard
-models18/tensorboard
+*/tensorboard
+
+models34
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
